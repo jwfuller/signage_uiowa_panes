@@ -1,0 +1,14 @@
+<?php
+/**
+ * @file
+ * Module file for signage uiowa panes module.
+ */
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function signage_uiowa_panes_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/' . $plugin_type;
+  }
+}

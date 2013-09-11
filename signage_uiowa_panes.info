@@ -1,0 +1,5 @@
+name = Custom Signage Content Panes for UIowa
+description = Ctools content panes for The University of Iowa signage.
+core = 7.x
+package = UIowa
+dependencies[] = ctools
