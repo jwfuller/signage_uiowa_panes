@@ -12,3 +12,19 @@ function signage_uiowa_panes_ctools_plugin_directory($owner, $plugin_type) {
     return 'plugins/' . $plugin_type;
   }
 }
+
+/**
+ * Implements hook_libraries_info().
+ */
+function signage_uiowa_panes_libraries_info() {
+  $libraries['skycons'] = array(
+    'name' => 'Skycons',
+    'vendor url' => 'http://darkskyapp.github.io/skycons/',
+    'download url' => 'https://github.com/darkskyapp/skycons',
+    'version' => 1.0,
+    'files' => array(
+      'js' => array('skycons.js'),
+    ),
+  );
+  return $libraries;
+}
