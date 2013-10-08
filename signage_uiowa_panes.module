@@ -28,3 +28,161 @@ function signage_uiowa_panes_libraries_info() {
   );
   return $libraries;
 }
+
+/**
+ * Implements hook_menu().
+ */
+function signage_uiowa_panes_menu() {
+  $items = array();
+  // A menu callback is required when using ajax outside of the Form API.
+  $items['itcavailability_panes_ajax_link_callback'] = array(
+    'page callback' => 'itcavailability_panes_ajax_link_response',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Callback for "Refresh availability" ajax link.
+ *
+ * Takes different logic paths based on whether Javascript was enabled.
+ * If $type == 'ajax', it tells this function that ajax.js has rewritten
+ * the URL and thus we are doing an AJAX and can return an array of commands.
+ *
+ * @param int $id
+ *   The ITC ID.
+ *
+ * @return array
+ *   If $type == 'ajax', returns an array of AJAX Commands.
+ *   Otherwise, just returns the content, which will end up being a page.
+ */
+function itcavailability_panes_ajax_link_response($type = 'ajax', $id) {
+    $data = itc_data($id);
+    $available = $data['total_available'];
+    $total = $data['total_computers'];
+    $id = $data['id'];
+    $output = array(
+      itc_availability($id, $available, $total),
+    );
+  if ($type == 'ajax') {
+    // Stripping all new lines from rendered and themed content so we don't have
+    // an empty nested div appear after each ajax load.
+    // See https://api.drupal.org/comment/50318#comment-50318
+    $rendered = str_replace(array("\r", "\n"), '', render($output));
+    $commands = array();
+    $commands[] = ajax_command_replace('#itc-id-' . $id, $rendered);
+    $page = array('#type' => 'ajax', '#commands' => $commands);
+    ajax_deliver($page);
+  }
+  else {
+    return $output;
+  }
+}
+
+/**
+ * Get ITC data.
+ *
+ *  @param int $id
+ *   The ITC ID.
+ *
+ * @return array
+ *   The data array which includes 'id', 'title', 'total_computers', and
+ *   'total_available' computers.
+ */
+function itc_data($id) {
+  $feed = _signage_uiowa_panes_decode('http://cs-services.its.uiowa.edu/webservices/inventory/locationshort?format=json&type=ITC');
+  foreach ($feed['Locations'] as $location) {
+    if ($location['ID'] == $id) {
+      $data['id'] = $location['ID'];
+      $data['title'] = $location['DisplayName'];
+      $data['total_computers'] = $location['ComputerInfo']['TotalComputers'];
+      $data['total_available'] = $location['ComputerInfo']['TotalAvailable'];
+      return $data;
+    }
+  }
+}
+
+/**
+ * Build the availability information.
+ *
+ *  @param int $id
+ *   The ITC ID.
+ *
+ *  @param int $total_available
+ *   The number of currently available computers.
+ *
+ *  @param int $total_computers
+ *   The number of computers in this ITC.
+ *
+ * @return array
+ *   If $type == 'ajax', returns an array of AJAX Commands.
+ *   Otherwise, just returns the content, which will end up being a page.
+ */
+function itc_availability($id, $total_available, $total_computers) {
+  $remainder = $total_available / $total_computers;
+  if ($remainder <= .2) {
+    $availability_class = "low-availability";
+  }
+  else if ( $remainder <= .5) {
+    $availability_class = "moderate-availability";
+  }
+  else {
+    $availability_class = "high-availability";
+  }
+  $availability = array(
+    '#prefix' => '<div class="itc-availability-numbers" id="itc-id-' . $id . '">',
+    '#markup' => '<span class="' . $availability_class . '">' . $total_available . '</span>/' . $total_computers,
+    '#suffix' => '</div>',
+  );
+  return $availability;
+}
+
+/**
+ * Build the ajax-ified link.
+ *
+ * @param int $id
+ *   The ITC ID.
+ *
+ * @param int $show_refresh
+ *   Show the refresh predictions link or hide it.
+ *
+ * @return array
+ *   Render array of the ajax link.
+ */
+function itcavailability_panes_ajax_render($id, $show_refresh) {
+  $href = 'itcavailability_panes_ajax_link_callback/nojs/';
+  $href .= $id . '/';
+  $build['ajax_link'] = array(
+    '#type' => 'link',
+    '#title' => t('Refresh ITC availability'),
+    // Note the /nojs portion of the href - if javascript is enabled,
+    // this part will be stripped from the path before it is called.
+    '#href' => $href,
+    '#id' => 'ajax_link_itc-id-' . $id,
+    '#ajax' => array(
+      'method' => 'html',
+    ),
+  );
+  if ($show_refresh == 0) {
+    $build['ajax_link']['#attributes'] = array('class' => array('element-invisible', 'element-focusable'));
+  }
+  return $build;
+}
+
+/**
+ * Helper function for decoding JSON.
+ *
+ * @param string $uri
+ *   The JSON feed.
+ *
+ * @return array
+ *   The retrieved data.
+ */
+function _signage_uiowa_panes_decode($uri) {
+  $decode_content = drupal_http_request($uri);
+  $decode_array = drupal_json_decode($decode_content->data);
+  return $decode_array;
+}
