@@ -268,9 +268,11 @@ function itc_build_availability_table($ids, $building = 0) {
           'data' => array(
             'availability' => array(
               'data' => itc_availability($id, $total_available, $total_computers),
+              'class' => array('itc-availability'),
             ),
             'title' => array(
               'data' => $title,
+              'class' => array('itc-name'),
             ),
           ),
           'class' => array($id),
