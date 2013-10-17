@@ -171,7 +171,7 @@ function itc_availability($id, $total_available, $total_computers, $wrapper = FA
     $availability_class = "high-availability";
   }
   $availability = array(
-    '#markup' => '<span class="' . $availability_class . '">' . $total_available . '</span>/' . $total_computers,
+    '#markup' => '<span class="availability-wrapper"><span class="availability ' . $availability_class . '">' . $total_available . '</span>/<span class="total">' . $total_computers . '</span></span>',
   );
   if ($wrapper) {
     $availability['#prefix'] = '<div class="itc-availability-numbers" id="itc-id-' . $id . '">';
