@@ -60,13 +60,25 @@ function signage_uiowa_panes_menu() {
  *   Otherwise, just returns the content, which will end up being a page.
  */
 function itcavailability_panes_ajax_link_response($type = 'ajax', $id) {
+  // Check to see if there are multiple ids, separated by '-'.
+  $multiple = strpos($id, '-');
+  // If there is only one ID, proceeed.
+  if ($multiple === false) {
     $data = itc_data($id);
     $available = $data['total_available'];
     $total = $data['total_computers'];
     $id = $data['id'];
     $output = array(
-      itc_availability($id, $available, $total),
+      itc_availability($id, $available, $total, $wrapper = TRUE),
     );
+  }
+  else {
+    $ids_array = explode('-', $id);
+    $output = array(
+      itc_build_availability_table($ids_array),
+    );
+  }
+
   if ($type == 'ajax') {
     // Stripping all new lines from rendered and themed content so we don't have
     // an empty nested div appear after each ajax load.
@@ -106,6 +118,32 @@ function itc_data($id) {
 }
 
 /**
+ * Get data on multiple ITCs.
+ *
+ *  @param array $ids
+ *   The ITC ID.
+ *
+ * @return array
+ *   Nested array of ITC information. Each ITC includes 'id', 'title',
+ *   'total_computers', and 'total_available' computers.
+ */
+function itc_data_multiple($ids) {
+  $feed = _signage_uiowa_panes_decode('http://cs-services.its.uiowa.edu/webservices/inventory/locationshort?format=json&type=ITC');
+  $data = array();
+  foreach ($feed['Locations'] as $location) {
+    if (in_array($location['ID'], $ids)) {
+      $data[] = array(
+        'id' => $location['ID'],
+        'title' => $location['DisplayName'],
+        'total_computers' => $location['ComputerInfo']['TotalComputers'],
+        'total_available' => $location['ComputerInfo']['TotalAvailable'],
+      );
+    }
+  }
+  return $data;
+}
+
+/**
  * Build the availability information.
  *
  *  @param int $id
@@ -121,7 +159,7 @@ function itc_data($id) {
  *   If $type == 'ajax', returns an array of AJAX Commands.
  *   Otherwise, just returns the content, which will end up being a page.
  */
-function itc_availability($id, $total_available, $total_computers) {
+function itc_availability($id, $total_available, $total_computers, $wrapper = FALSE) {
   $remainder = $total_available / $total_computers;
   if ($remainder <= .2) {
     $availability_class = "low-availability";
@@ -133,10 +171,12 @@ function itc_availability($id, $total_available, $total_computers) {
     $availability_class = "high-availability";
   }
   $availability = array(
-    '#prefix' => '<div class="itc-availability-numbers" id="itc-id-' . $id . '">',
     '#markup' => '<span class="' . $availability_class . '">' . $total_available . '</span>/' . $total_computers,
-    '#suffix' => '</div>',
   );
+  if ($wrapper) {
+    $availability['#prefix'] = '<div class="itc-availability-numbers" id="itc-id-' . $id . '">';
+    $availability['#suffix'] = '</div>';
+  }
   return $availability;
 }
 
@@ -170,6 +210,93 @@ function itcavailability_panes_ajax_render($id, $show_refresh) {
     $build['ajax_link']['#attributes'] = array('class' => array('element-invisible', 'element-focusable'));
   }
   return $build;
+}
+
+/**
+ * Builds a predictions table.
+ *
+ * @param int $ids
+ *   The ids of ITCs you want displayed in the table.
+ *
+ * @param bool $agency
+ *   Determines if the agency column is displayed. Defaults to 0 (false).
+ *
+ * @return array
+ *   A renderable array of prediction data.
+ */
+function itc_build_availability_table($ids, $building = 0) {
+  $itc_data = itc_data_multiple($ids);
+  $ids_string = implode('-', $ids);
+  $itc_table = array(
+    '#theme' => 'table',
+    '#sticky' => FALSE,
+    '#rows' => array(),
+    '#attributes' => array(
+      'class' => array(
+        'itc-availability-grid',
+      ),
+      'id' => array(
+        'itc-id-' . $ids_string,
+      ),
+    ),
+  );
+  if ($itc_data) {
+    // Determine if the agency column is needed.
+    if ($building == 0) {
+      $itc_table['#header'] = array(
+        t('Available Computers'),
+        t('Name'),
+      );
+    }
+    else {
+      $itc_table['#header'] = array(
+        t('Available Computers'),
+        t('Name'),
+        t('Building'),
+      );
+    }
+
+    // Build the rows in the table.
+    foreach ($itc_data as $itc) {
+      $title = check_plain($itc['title']);
+      $id = check_plain($itc['id']);
+      $total_computers = check_plain($itc['total_computers']);
+      $total_available = check_plain($itc['total_available']);
+      // Determine if the building column is needed.
+      if ($building == 0) {
+        $itc_table['#rows'][] = array(
+          'data' => array(
+            'availability' => array(
+              'data' => itc_availability($id, $total_available, $total_computers),
+            ),
+            'title' => array(
+              'data' => $title,
+            ),
+          ),
+          'class' => array($id),
+        );
+      }
+      else {
+        $itc_table['#rows'][] = array(
+          'data' => array(
+            itc_availability($id, $total_available, $total_computers),
+            $title,
+            "Building would go here",
+          ),
+          'class' => array($id),
+        );
+      }
+    }
+
+    return $itc_table;
+  }
+  else {
+    $itc_table['#rows'][] = array(
+      'data' => array(t("ITC availability could not be determined.")),
+      'class' => array('error'),
+    );
+    return $itc_table;
+  }
 }
 
 /**

@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Ctools content type plugin file for bongo module.
+ * Ctools content type plugin file for individual ITC pane.
  */
 
 $plugin = array(
@@ -88,7 +88,7 @@ function itcavailability_render($subtype, $conf, $panel_args, $context = NULL) {
   $block->title = $title;
   $block->content = array(
     array(
-      itc_availability($id, $available, $total),
+      itc_availability($id, $available, $total, $wrapper = TRUE),
     ),
     array(
       _itc_availability_text($conf['show_availability_text']),
