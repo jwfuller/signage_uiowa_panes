@@ -1,24 +1,43 @@
-var ImageReloaded = 0;
-var BaseURL = "http://webcam.iowa.uiowa.edu/";
-// This is the path to the image generating asp file.
-var File = "live/readImage.asp";
-// Force an immediate image load
-var theTimer = setTimeout('reloadImage()', 1);
-// This function will stop unneeded reloads if client has slow bandwidth
-function ImageLoaded() {
-  ImageReloaded = 1;
-}
-function reloadImage() {
-  // Reload the image every one second (1000 ms)
-  theTimer = setTimeout('reloadImage()', 1000);
-  // Here we load the image
-  if (ImageReloaded=1) {
-    theDate = new Date();
-    var url = BaseURL;
-    url += File;
-    url += '?dummy=' + theDate.getTime().toString(10);
-    // The dummy above enforces a bypass of the browser image cache
-    document.webCamImage.src = url;
-    ImageReloaded = 0;
-  }
-}
+/**
+ * @file
+ * Javascript for the signage panes module.
+ */
+
+// var ImageReloaded = 0;
+// var BaseURL = "http://webcam.iowa.uiowa.edu/live/readImage.asp";
+// var theTimer = setTimeout('reloadImage()', 1);
+// function ImageLoaded() {
+//   ImageReloaded = 1;
+// }
+// function reloadImage() {
+//   theTimer = setTimeout('reloadImage()', 1000);
+//   if (ImageReloaded = 1) {
+//     theDate = new Date();
+//     var url = BaseURL;
+//     url += '?dummy=' + theDate.getTime().toString(10);
+//     document.webCamImage.src = url;
+//     ImageReloaded = 0;
+//   }
+// }
+
+ // Namespace jQuery to avoid conflicts.
+(function($) {
+  // Attach Pentacrest Cam behavior.
+  Drupal.behaviors.pentacrestcam = {
+    attach: function(context, settings) {
+      $('.pane-pentacrestcam', context).once('pentacrestcam', function() {
+        Drupal.pentacrestcam();
+      });
+    }
+  };
+  // Define the behavior.
+  Drupal.pentacrestcam = function() {
+
+
+    setInterval(function () {
+      d = new Date();
+      $('.webCamImage').attr("src", "http://webcam.iowa.uiowa.edu/live/readImage.asp?"+d.getTime());
+    }, 1000);
+  };
+
+})(jQuery);

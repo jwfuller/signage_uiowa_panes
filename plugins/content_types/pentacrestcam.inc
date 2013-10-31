@@ -54,8 +54,8 @@ function pentacrestcam_render($subtype, $conf, $panel_args, $context = NULL) {
 
   $block->title = t('Live view of the University of Iowa Pentacrest');
   $block->content = '
-    <div id="webcam">
-      <img name="webCamImage" onload="ImageLoaded()" src="" height="576" width="1024" alt="Live image">
+    <div class="webcam">
+      <img class="webCamImage" src="http://webcam.iowa.uiowa.edu/live/readImage.asp" height="576" width="1024" alt="Pentacrest Cam" />
     </div>';
   drupal_add_js(drupal_get_path('module', 'signage_uiowa_panes') . '/js/pentacrestcam.js');
   return $block;
