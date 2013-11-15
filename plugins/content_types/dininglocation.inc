@@ -52,7 +52,7 @@ function dininglocation_edit_form($form, &$form_state) {
   );
   $form['show_building_text'] = array(
     '#title' => t('Show Building Name'),
-    '#description' => t('Show the name of the buiulding that contains the location.'),
+    '#description' => t('Show the name of the building that contains the location.'),
     '#type' => 'checkbox',
     '#default_value' => $conf['show_building_text'],
   );
