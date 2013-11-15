@@ -78,7 +78,7 @@ function dininglocation_edit_form_submit($form, &$form_state) {
  */
 function dininglocation_render($subtype, $conf, $panel_args, $context = NULL) {
   $block = new stdClass();
-  // Get data from the ITC feed.
+  // Get data from the Dining Locations feed.
   $data = location_data($conf['location']);
   $title = $data['title'];
   $id = $data['id'];
