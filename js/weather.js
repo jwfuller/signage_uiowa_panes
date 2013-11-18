@@ -36,43 +36,45 @@
         console.log(json);
         //$('#feelslike').text('Feels Like \n'+Math.round(json.currently.apparentTemperature)+'°');
         //$('#currently').text(json.currently.summary);
+      if (json) {
+          //Check if the markup for each of the options exists.
+          //If it does, add the relevant information to the markup
+          if ($('#current-weather').length > 0) {
+            $('#temp').text(Math.round(json.currently.temperature)+'°');
+            $('#currently').text(json.currently.summary + ' - Feels Like \n' + Math.round(json.currently.apparentTemperature)+'°');
+            var icon = json.currently.icon;
+            getSkycon(icon,"skycon")
+          };
+          if ($('#summary').length > 0) {
+            $('#summary').html('<h3 class="24hours">Next 24 hours</h3><p>' + json.hourly.summary + '</p>');
+          };
 
-        //Check if the markup for each of the options exists.
-        //If it does, add the relevant information to the markup
-        if ($('#current-weather').length > 0) {
-          $('#temp').text(Math.round(json.currently.temperature)+'°');
-          $('#currently').text(json.currently.summary + ' - Feels Like \n' + Math.round(json.currently.apparentTemperature)+'°');
-          var icon = json.currently.icon;
-          getSkycon(icon,"skycon")
-        };
-        if ($('#summary').length > 0) {
-          $('#summary').html('<h3 class="24hours">Next 24 hours</h3><p>' + json.hourly.summary + '</p>');
-        };
+          if ($('#three-day-forecast').length > 0) {
+            var forecastData = getExtendedForecast(json.daily.data);
+            var todayIcon = forecastData[0].icon;
+            var tomorrowIcon = forecastData[1].icon;
+            var nextDayIcon = forecastData[2].icon;
 
-        if ($('#three-day-forecast').length > 0) {
-          var forecastData = getExtendedForecast(json.daily.data);
-          var todayIcon = forecastData[0].icon;
-          var tomorrowIcon = forecastData[1].icon;
-          var nextDayIcon = forecastData[2].icon;
+            $('#today-day').text('Today');
+            $('#today-max').text(forecastData[0].max);
+            $('#today-min').text(forecastData[0].min);
+            getSkycon(todayIcon,"today-skycon");
 
-          $('#today-day').text('Today');
-          $('#today-max').text(forecastData[0].max);
-          $('#today-min').text(forecastData[0].min);
-          getSkycon(todayIcon,"today-skycon");
+            $('#tomorrow-day').text(forecastData[1].day);
+            $('#tomorrow-max').text(forecastData[1].max);
+            $('#tomorrow-min').text(forecastData[1].min);
+            getSkycon(tomorrowIcon,"tomorrow-skycon");
 
-          $('#tomorrow-day').text(forecastData[1].day);
-          $('#tomorrow-max').text(forecastData[1].max);
-          $('#tomorrow-min').text(forecastData[1].min);
-          getSkycon(tomorrowIcon,"tomorrow-skycon");
+            $('#next-day-day').text(forecastData[2].day);
+            $('#next-day-max').text(forecastData[2].max);
+            $('#next-day-min').text(forecastData[2].min);
+            getSkycon(nextDayIcon,"next-day-skycon");
 
-          $('#next-day-day').text(forecastData[2].day);
-          $('#next-day-max').text(forecastData[2].max);
-          $('#next-day-min').text(forecastData[2].min);
-          getSkycon(nextDayIcon,"next-day-skycon");
-
-        };
-
-
+          };
+        }
+        else {
+          $('#currently').text("Weather data currently unavailiable");
+        }
       }
     });
 

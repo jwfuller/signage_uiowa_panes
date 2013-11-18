@@ -86,11 +86,11 @@ function uiweather_render($subtype, $conf, $panel_args, $context = NULL) {
   $twenty_four_content = '';
 //If the three day forecast should be shown, add its markup to the three day content
   if ($conf['three_day'] == 1) {
-    $three_day_content = "<div id='three-day-forecast'> <div id='today'><div id='today-day'></div><canvas id='today-skycon' width ='50' height='50'></canvas><div id='today-max'></div><div id='today-min'></div></div><div id='tomorrow'><div id='tomorrow-day'></div><canvas id='tomorrow-skycon' width ='50' height='50'></canvas><div id='tomorrow-max'></div><div id='tomorrow-min'></div></div><div id='next-day'><div id='next-day-day'></div><canvas id='next-day-skycon' width ='50' height='50'></canvas><div id='next-day-max'></div><div id='next-day-min'></div></div></div>";
+    $three_day_content = "<div id='three-day-forecast'> <div id='today'> <div id='today-day'></div> <canvas id='today-skycon' width ='50' height='50'></canvas> <div class='temperature-container'> <div id='today-max'></div> <div id='today-min'></div> </div> </div> <div id='tomorrow'> <div id='tomorrow-day'></div> <canvas id='tomorrow-skycon' width ='50' height='50'></canvas> <div class='temperature-container'> <div id='tomorrow-max'></div> <div id='tomorrow-min'></div> </div> </div> <div id='next-day'> <div id='next-day-day'></div> <canvas id='next-day-skycon' width ='50' height='50'></canvas> <div class='temperature-container'> <div id='next-day-max'></div> <div id='next-day-min'></div> </div> </div> </div>";
   }
 //If the current weather should be shown, add its markup
   if ($conf['current'] == 1) {
-    $current_content = '<div id="current-weather"><canvas id="skycon" width="200" height="200"></canvas><div id="temp"></div><div id="feelslike"></div><div id="currently"></div></div>';
+    $current_content = '<div id="current-weather"><canvas id="skycon" width="100" height="100"></canvas><div id="temp"></div><div id="feelslike"></div><div id="currently"></div></div>';
   }
 //If the 24 hour data should be shown, add its markup
   if ($conf['24_hour'] == 1) {
