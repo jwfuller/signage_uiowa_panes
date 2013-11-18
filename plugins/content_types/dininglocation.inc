@@ -44,17 +44,17 @@ function dininglocation_edit_form($form, &$form_state) {
     '#default_value' => $conf['location'],
     '#description' => t("The Dining facility location."),
   );
+    $form['show_building_text'] = array(
+    '#title' => t('Show Building Name'),
+    '#description' => t('Show the name of the building that contains the location.'),
+    '#type' => 'checkbox',
+    '#default_value' => $conf['show_building_text'],
+  );
   $form['show_summary_text'] = array(
     '#title' => t('Show Location Summary'),
     '#description' => t('Show the summary text for the location.'),
     '#type' => 'checkbox',
     '#default_value' => $conf['show_summary_text'],
-  );
-  $form['show_building_text'] = array(
-    '#title' => t('Show Building Name'),
-    '#description' => t('Show the name of the building that contains the location.'),
-    '#type' => 'checkbox',
-    '#default_value' => $conf['show_building_text'],
   );
 
   return $form;
@@ -87,17 +87,8 @@ function dininglocation_render($subtype, $conf, $panel_args, $context = NULL) {
   $summary = $data['summary'];
 
   $block->title = $title;
-  $block->content = array(
-    array(
-      _dining_building_text($id, $building, $conf['show_building_text']),
-    ),
-    array(
-      _dining_summary_text($id, $summary, $conf['show_summary_text']),
-    ),
-    array(
-      dining_hours($id, $hours),
-    ),
-  );
+  $block->content =
+    dininglocation_text($id, $hours, $building, $conf['show_building_text'], $summary, $conf['show_summary_text']);
 
   drupal_add_css(drupal_get_path('module', 'signage_uiowa_panes') . '/css/dininglocation.css');
 
@@ -117,10 +108,11 @@ function dininglocation_build_location_options() {
   return $options;
 }
 
-/*
+/**
  * Build an array of the output data.
+ * @param  int $id    ID of the location
+ * @return array      All of the neccesary data from the feed
  */
-
 function location_data($id) {
   $feed = _signage_uiowa_panes_decode('http://dining.uiowa.edu/api/v1/json/locations');
   foreach ($feed['locations'] as $location) {
@@ -137,34 +129,30 @@ function location_data($id) {
   }
 }
 
-function dining_hours($id, $hours) {
-  return array('#markup' => '<div class="hours">' . $hours . '</div>',);
-}
-
 /**
- * Determines if text should be shown.
- *
- *  @param int $show_summary_text
- *  @param int $show_building_text
- *   If 1 then it is shown, if 0 then it is not shown.
- *
- * @return array
- *   The markup with the summary text.
+ * Check the text options and build the array to render
+ * @param  int $id                  ID of the location
+ * @param  string $hours            Hours text
+ * @param  string $building         Building name
+ * @param  int $show_building_text  1 to show, 0 to hide
+ * @param  string $summary          Summary text
+ * @param  int $show_summary_text   1 to show, 0 to hide
+ * @return array                    Markup with hours and other requested text
  */
-function _dining_summary_text($id, $summary, $show_summary_text) {
-  if ($show_summary_text == 1) {
-    return array('#markup' => '<div class="summary">' . $summary . '</div>');
-  }
-  else {
-    return;
-  }
-}
-
-function _dining_building_text($id, $building, $show_building_text) {
+function dininglocation_text($id, $hours, $building, $show_building_text, $summary, $show_summary_text) {
+  $suplemental_content = array();
   if ($show_building_text == 1) {
-    return array('#markup' => '<div class="building">' . $building . '</div>');
+    $suplemental_content[] = array(
+      '#markup' => '<div class="building">' . $building . '</div>'
+    );
   }
-  else {
-    return;
+  if ($show_summary_text == 1){
+    $suplemental_content[] = array(
+      '#markup' => '<div class="summary">' . $summary . '</div>'
+    );
   }
+  $suplemental_content[] = array(
+      '#markup' => '<div class="hours">' . $hours . '</div>'
+    );
+  return array($suplemental_content);
 }
