@@ -73,7 +73,7 @@
         };
 
 
-      };
+      }
     });
 
     function getSkycon(icon,element) {
