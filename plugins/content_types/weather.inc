@@ -12,6 +12,11 @@ $plugin = array(
   'edit form' => 'uiweather_edit_form',
   'render callback' => 'uiweather_render',
   'admin info' => 'uiweather_admin_info',
+  'defaults' => array(
+    'three_day' => 0,
+    'current' => 1,
+    '24_hour' => 0,
+  ),
 );
 
 
@@ -32,6 +37,25 @@ function uiweather_admin_info($subtype, $conf, $contexts) {
  */
 function uiweather_edit_form($form, &$form_state) {
   $conf = $form_state['conf'];
+
+  $form['three_day'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show Three day forecast'),
+    '#description' => t('Check this box to display three day forecast data'),
+    '#default_value' => $conf['three_day'],
+  );
+  $form['current'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show the current weather'),
+    '#description' => t('Check this to display the current weather data'),
+    '#default_value' => $conf['current'],
+  );
+  $form['24_hour'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show next 24 hour prediction'),
+    '#description' => t('Check this to display the prediction for the next 24 hours'),
+    '#default_value' => $conf['24_hour'],
+  );
   return $form;
 }
 
@@ -53,11 +77,24 @@ function uiweather_edit_form_submit($form, &$form_state) {
  */
 function uiweather_render($subtype, $conf, $panel_args, $context = NULL) {
   $block = new stdClass();
-
+  // die(var_dump($conf));
   $block->title = t('Weather');
+  $three_day_content = '';
+  $current_content = '';
+  $twenty_four_content = '';
+
+  if ($conf['three_day'] == 1) {
+    $three_day_content = "<div id='three-day-forecast'> <div id='today'><div id='today-day'></div><canvas id='today-skycon' width ='50' height='50'></canvas><div id='today-max'></div><div id='today-min'></div></div><div id='tomorrow'><div id='tomorrow-day'></div><canvas id='tomorrow-skycon' width ='50' height='50'></canvas><div id='tomorrow-max'></div><div id='tomorrow-min'></div></div><div id='next-day'><div id='next-day-day'></div><canvas id='next-day-skycon' width ='50' height='50'></canvas><div id='next-day-max'></div><div id='next-day-min'></div></div></div>";
+  }
+  if ($conf['current'] == 1) {
+    $current_content = '<div id="current-weather"><canvas id="skycon" width="200" height="200"></canvas><div id="temp"></div><div id="feelslike"></div><div id="currently"></div></div>';
+  }
+  if ($conf['24_hour'] == 1) {
+    $twenty_four_content = '<div id="summary"></div>';
+  }
   $block->content = array(
     '#prefix' => '<div id="forecastdata">',
-    '#markup' => '<canvas id="skycon" width="200" height="200"></canvas><div id="temp"></div><div id="feelslike"></div><div id="currently"></div><div id="summary"></div>',
+    '#markup' => $current_content . $twenty_four_content . $three_day_content,
     '#suffix' => '</div>',
   );
 
